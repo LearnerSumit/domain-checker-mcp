@@ -3,134 +3,830 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Domain Checker MCP</title>
+
+    <title>Domain Checker MCP — check domain availability inside Claude</title>
     <meta
       name="description"
-      content="A remote MCP server that lets Claude check domain-name availability."
+      content="A free, open-source MCP server that lets Claude and other AI assistants check whether a domain name is available for registration. Add one URL, then ask “is mybrand.ai available?”. Self-hostable on Vercel in 3 minutes."
     />
+    <meta
+      name="keywords"
+      content="MCP server, Model Context Protocol, domain availability, domain checker, Claude MCP, check domain in Claude, WHOIS API, domain name search, Claude connector, Vercel MCP"
+    />
+    <meta name="author" content="Sumit Kumar" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://domain-checker-mcp.vercel.app/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Domain Checker MCP" />
+    <meta property="og:title" content="Domain Checker MCP — check domain availability inside Claude" />
+    <meta
+      property="og:description"
+      content="Free, open-source MCP server. Add one URL to Claude and ask “is mybrand.ai available?”. Self-hostable on Vercel in 3 minutes."
+    />
+    <meta property="og:url" content="https://domain-checker-mcp.vercel.app/" />
+    <meta property="og:image" content="https://domain-checker-mcp.vercel.app/og.svg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Domain Checker MCP — check domain availability inside Claude" />
+    <meta
+      name="twitter:description"
+      content="Free, open-source MCP server. Add one URL to Claude and ask “is mybrand.ai available?”."
+    />
+    <meta name="twitter:image" content="https://domain-checker-mcp.vercel.app/og.svg" />
+
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0b0d" media="(prefers-color-scheme: dark)" />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234f7cff'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "Domain Checker MCP",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Any (Model Context Protocol client)",
+            "description": "An open-source MCP (Model Context Protocol) server that lets AI assistants such as Claude check whether a domain name is available for registration.",
+            "url": "https://domain-checker-mcp.vercel.app/",
+            "softwareVersion": "1.0.0",
+            "license": "https://opensource.org/licenses/MIT",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "author": { "@type": "Person", "name": "Sumit Kumar" },
+            "codeRepository": "https://github.com/LearnerSumit/domain-checker-mcp"
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How do I check domain availability in Claude?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Add the Domain Checker MCP endpoint (https://domain-checker-mcp.vercel.app/mcp) as a custom connector in Claude's settings, enable it in a chat, then ask a question like 'is mybrand.ai available?'. Claude calls the check_domain_availability tool and reports the result."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What is an MCP server?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "An MCP (Model Context Protocol) server exposes tools that an AI assistant can call. This one exposes a single tool, check_domain_availability, which looks up whether a domain is registered."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is it free?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. The project is MIT-licensed and free to use. The shared hosted instance uses one rate-limited API key; for heavier use, deploy your own copy on Vercel with a free RapidAPI key."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Which TLDs are supported?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Any syntactically valid TLD, including .com, .ai, .io, .co, .dev, .app and multi-level TLDs like .co.uk. Nothing is hard-coded."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does it work with tools other than Claude?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. It uses the standard MCP Streamable HTTP transport, so any MCP-compatible client (Claude, Claude Code, Cursor, and others) can connect with just the URL."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
     <style>
       :root {
         color-scheme: light dark;
-        --bg: #0b0c0f;
-        --card: #15171c;
-        --fg: #e7e9ee;
-        --muted: #9aa1ad;
-        --accent: #6ea8fe;
-        --border: #262a33;
-        --code: #0e1014;
+        --bg: #fbfbfd;
+        --bg-alt: #f2f3f6;
+        --card: #ffffff;
+        --fg: #16181d;
+        --fg-soft: #3f4550;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --code-bg: #f4f5f8;
+        --accent: #3257e8;
+        --accent-fg: #ffffff;
+        --ok-bg: #e7f6ec;
+        --ok-fg: #10673a;
+        --no-bg: #fdecec;
+        --no-fg: #a3272b;
+        --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+        --radius: 14px;
       }
-      @media (prefers-color-scheme: light) {
+      @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #f6f7f9;
-          --card: #ffffff;
-          --fg: #1a1d23;
-          --muted: #5b6270;
-          --accent: #2f6feb;
-          --border: #e4e7ec;
-          --code: #f0f2f5;
+          --bg: #0a0b0d;
+          --bg-alt: #101216;
+          --card: #14161b;
+          --fg: #e9ebf0;
+          --fg-soft: #c2c6d0;
+          --muted: #8b909c;
+          --border: #23262d;
+          --code-bg: #0f1115;
+          --accent: #6d8bff;
+          --accent-fg: #0a0b0d;
+          --ok-bg: #12301f;
+          --ok-fg: #7ee2a8;
+          --no-bg: #3a1618;
+          --no-fg: #ff9ca0;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
         }
       }
+
       * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
       body {
         margin: 0;
         background: var(--bg);
         color: var(--fg);
-        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+          "Apple Color Emoji", sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
       }
-      main { max-width: 760px; margin: 0 auto; padding: 56px 22px 80px; }
-      h1 { font-size: 1.9rem; margin: 0 0 6px; letter-spacing: -0.02em; }
-      h2 { font-size: 1.15rem; margin: 34px 0 10px; }
-      p { color: var(--fg); }
-      .sub { color: var(--muted); margin-top: 0; }
-      a { color: var(--accent); }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 18px 20px;
-        margin: 16px 0;
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      h1, h2, h3 { line-height: 1.25; letter-spacing: -0.02em; font-weight: 680; }
+      code, kbd, pre {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+          monospace;
       }
-      code, pre {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 0.9rem;
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+      .wrap { max-width: 960px; margin: 0 auto; padding: 0 22px; }
+      section { padding: 56px 0; border-top: 1px solid var(--border); }
+      section:first-of-type { border-top: 0; }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin: 0 0 10px;
       }
-      code { background: var(--code); padding: 2px 6px; border-radius: 6px; }
+      section > .wrap > h2 { font-size: 1.6rem; margin: 0 0 14px; }
+      .lead { color: var(--fg-soft); max-width: 62ch; }
+
+      /* Header */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: saturate(180%) blur(12px);
+        background: color-mix(in srgb, var(--bg) 82%, transparent);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav { display: flex; align-items: center; justify-content: space-between; height: 58px; }
+      .brand { display: flex; align-items: center; gap: 10px; font-weight: 680; color: var(--fg); }
+      .brand:hover { text-decoration: none; }
+      .brand .mark {
+        width: 26px; height: 26px; border-radius: 7px; background: var(--accent);
+        display: grid; place-items: center; flex: none;
+      }
+      .brand .mark svg { width: 15px; height: 15px; }
+      .nav-links { display: flex; align-items: center; gap: 20px; font-size: 0.92rem; }
+      .nav-links a { color: var(--fg-soft); }
+      @media (max-width: 620px) { .nav-links a.hide-sm { display: none; } }
+
+      /* Hero */
+      .hero { padding: 66px 0 52px; text-align: center; }
+      .hero h1 { font-size: clamp(2rem, 6vw, 3rem); margin: 0 0 16px; }
+      .hero p.tag { font-size: 1.12rem; color: var(--fg-soft); max-width: 46ch; margin: 0 auto 10px; }
+      .badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0 26px; }
+      .badge {
+        font-size: 0.78rem; color: var(--muted); border: 1px solid var(--border);
+        border-radius: 999px; padding: 4px 11px; background: var(--card);
+      }
+      .cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 600;
+        padding: 11px 18px; border-radius: 10px; border: 1px solid var(--border);
+        background: var(--card); color: var(--fg); cursor: pointer; transition: transform 0.04s ease;
+      }
+      .btn:hover { text-decoration: none; border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+      .btn:active { transform: translateY(1px); }
+      .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+      .endpoint-box {
+        margin: 26px auto 0; max-width: 620px; background: var(--card); border: 1px solid var(--border);
+        border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; text-align: left;
+      }
+      .endpoint-box .k { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+      .endpoint-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+      .endpoint-row code {
+        flex: 1; font-size: 0.95rem; background: var(--code-bg); border: 1px solid var(--border);
+        border-radius: 8px; padding: 9px 12px; overflow-x: auto; white-space: nowrap;
+      }
+      .copy-btn {
+        flex: none; border: 1px solid var(--border); background: var(--bg-alt); color: var(--fg-soft);
+        border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      }
+      .copy-btn:hover { color: var(--fg); }
+
+      /* Try widget */
+      .try-card {
+        background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+        box-shadow: var(--shadow); padding: 22px;
+      }
+      .try-form { display: flex; flex-wrap: wrap; gap: 10px; }
+      .try-form input {
+        flex: 1 1 240px; font: inherit; font-size: 1rem; padding: 12px 14px; border-radius: 10px;
+        border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+      }
+      .try-form button { flex: none; }
+      .try-hint { color: var(--muted); font-size: 0.86rem; margin: 10px 0 0; }
+      .result {
+        margin-top: 16px; border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+        background: var(--bg-alt); display: none;
+      }
+      .result.show { display: block; }
+      .result .status {
+        display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 0.9rem;
+        padding: 4px 10px; border-radius: 999px;
+      }
+      .result .status.ok { background: var(--ok-bg); color: var(--ok-fg); }
+      .result .status.no { background: var(--no-bg); color: var(--no-fg); }
+      .result .status.err { background: var(--no-bg); color: var(--no-fg); }
+      .result .domain { font-weight: 680; font-size: 1.1rem; margin-right: 10px; }
+      .result .meta { color: var(--muted); font-size: 0.88rem; margin-top: 8px; }
+      .spinner {
+        width: 15px; height: 15px; border: 2px solid currentColor; border-right-color: transparent;
+        border-radius: 50%; display: inline-block; animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* Generic blocks */
       pre {
-        background: var(--code);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 14px 16px;
-        overflow-x: auto;
+        background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px;
+        padding: 15px 16px; overflow-x: auto; font-size: 0.86rem; line-height: 1.55; position: relative;
       }
-      pre code { background: none; padding: 0; }
-      ol { padding-left: 20px; }
-      li { margin: 6px 0; }
-      .endpoint {
-        display: inline-block;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        background: var(--code);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 8px 12px;
-        margin-top: 4px;
-        word-break: break-all;
+      pre code { color: var(--fg-soft); }
+      p code, li code { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: 0.86em; }
+
+      .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+      .feat { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 16px 14px; }
+      .feat .ico { font-size: 1.15rem; }
+      .feat h3 { font-size: 0.98rem; margin: 8px 0 4px; }
+      .feat p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+
+      .steps { counter-reset: s; display: grid; gap: 14px; }
+      .step { display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start; }
+      .step::before {
+        counter-increment: s; content: counter(s); width: 30px; height: 30px; border-radius: 50%;
+        background: var(--accent); color: var(--accent-fg); font-weight: 700; font-size: 0.9rem;
+        display: grid; place-items: center;
       }
-      footer { color: var(--muted); font-size: 0.85rem; margin-top: 44px; }
-      .pill {
-        display: inline-block; font-size: 0.75rem; color: var(--muted);
-        border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; margin-left: 8px;
+      .step h3 { font-size: 1rem; margin: 3px 0 4px; }
+      .step p { margin: 0; color: var(--fg-soft); font-size: 0.94rem; }
+      .step p.sm { color: var(--muted); font-size: 0.86rem; }
+
+      .flow {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.86rem;
+        color: var(--fg-soft);
       }
+      .flow span {
+        background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 7px 11px;
+        white-space: nowrap;
+      }
+      .flow .arr { border: 0; background: none; color: var(--muted); padding: 0 2px; }
+
+      details {
+        border: 1px solid var(--border); border-radius: 12px; padding: 0 16px; margin-bottom: 10px;
+        background: var(--card);
+      }
+      details summary {
+        cursor: pointer; padding: 14px 0; font-weight: 620; list-style: none; display: flex;
+        justify-content: space-between; align-items: center; gap: 12px;
+      }
+      details summary::-webkit-details-marker { display: none; }
+      details summary::after { content: "+"; color: var(--muted); font-size: 1.2rem; }
+      details[open] summary::after { content: "\2013"; }
+      details > p { margin: 0 0 16px; color: var(--fg-soft); font-size: 0.94rem; }
+
+      .tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 14px; flex-wrap: wrap; }
+      .tab-btn {
+        border: 0; background: none; color: var(--muted); font: inherit; font-weight: 600;
+        font-size: 0.9rem; padding: 8px 12px; cursor: pointer; border-bottom: 2px solid transparent;
+      }
+      .tab-btn[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+      .tab-panel[hidden] { display: none; }
+
+      footer { border-top: 1px solid var(--border); padding: 34px 0 60px; color: var(--muted); font-size: 0.88rem; }
+      footer .frow { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; }
+      footer a { color: var(--fg-soft); }
     </style>
   </head>
-  <body>
-    <main>
-      <h1>Domain Checker MCP <span class="pill">Streamable HTTP</span></h1>
-      <p class="sub">
-        A remote <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server that lets
-        Claude (and other MCP clients) check whether a domain name is available for registration.
-      </p>
 
-      <div class="card">
-        <strong>MCP endpoint</strong><br />
-        <span class="endpoint" id="endpoint">https://THIS-HOST/mcp</span>
+  <body>
+    <header>
+      <div class="wrap nav">
+        <a class="brand" href="/">
+          <span class="mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M9 16.5l4.5 4.5L23 11" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          Domain Checker MCP
+        </a>
+        <nav class="nav-links">
+          <a href="#add-to-claude" class="hide-sm">Add to Claude</a>
+          <a href="#self-host" class="hide-sm">Self-host</a>
+          <a href="#faq" class="hide-sm">FAQ</a>
+          <a href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <div class="wrap hero">
+        <h1>Check domain availability<br />without leaving Claude</h1>
+        <p class="tag">
+          A free, open-source <a href="https://modelcontextprotocol.io">MCP</a> server. Add one URL to
+          Claude, then just ask &mdash; <em>&ldquo;is mybrand.ai available?&rdquo;</em>
+        </p>
+        <div class="badges">
+          <span class="badge">Streamable HTTP (MCP 2026-07-28)</span>
+          <span class="badge">Works with Claude, Claude&nbsp;Code, Cursor</span>
+          <span class="badge">MIT licensed</span>
+          <span class="badge">Deploy your own in ~3&nbsp;min</span>
+        </div>
+        <div class="cta">
+          <button class="btn primary" data-copy="ENDPOINT" type="button">Copy MCP endpoint</button>
+          <a class="btn" href="#add-to-claude">How to add it &darr;</a>
+          <a class="btn" href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">View source</a>
+        </div>
+
+        <div class="endpoint-box">
+          <div class="k">MCP endpoint</div>
+          <div class="endpoint-row">
+            <code id="endpoint">https://domain-checker-mcp.vercel.app/mcp</code>
+            <button class="copy-btn" data-copy="ENDPOINT" type="button">Copy</button>
+          </div>
+        </div>
       </div>
 
-      <h2>Add it to Claude</h2>
-      <ol>
-        <li>Open Claude &rarr; <strong>Settings</strong> &rarr; <strong>Connectors</strong> (or <strong>Feature preview / MCP</strong>).</li>
-        <li>Click <strong>Add custom connector</strong>.</li>
-        <li>Name: <code>Domain Checker</code>. URL: the endpoint shown above.</li>
-        <li>Save, then enable it in a chat and ask: <em>&ldquo;Check whether perfectreview.ai is available.&rdquo;</em></li>
-      </ol>
+      <!-- TRY IT -->
+      <section id="try">
+        <div class="wrap">
+          <p class="eyebrow">Try it right now</p>
+          <h2>Type a domain &mdash; this page checks it live</h2>
+          <p class="lead" style="margin-bottom: 20px">
+            This calls the same <code>check_domain_availability</code> tool Claude would call, against
+            the live endpoint above.
+          </p>
+          <div class="try-card">
+            <form class="try-form" id="checkForm">
+              <input
+                id="domainInput"
+                type="text"
+                inputmode="url"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                placeholder="perfectreview.ai"
+                aria-label="Domain name to check"
+              />
+              <button class="btn primary" type="submit" id="checkBtn">Check availability</button>
+            </form>
+            <p class="try-hint">
+              Examples: <code>mybrand.com</code>, <code>side-project.io</code>, <code>acme.co.uk</code>.
+              The shared instance is rate-limited &mdash; if you see a &ldquo;rate limiting&rdquo;
+              message, wait a few seconds.
+            </p>
+            <div class="result" id="result" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
 
-      <h2>Claude Code / Cursor</h2>
-      <pre><code>claude mcp add --transport http domain-checker <span class="endpoint-inline">https://THIS-HOST/mcp</span></code></pre>
+      <!-- WHAT IS IT -->
+      <section id="what">
+        <div class="wrap">
+          <p class="eyebrow">What this is</p>
+          <h2>One tool, one job</h2>
+          <p class="lead">
+            <strong>MCP (Model Context Protocol)</strong> is the open standard for connecting AI
+            assistants to external tools. This server adds a single tool &mdash;
+            <code>check_domain_availability</code> &mdash; so Claude can look up domains itself instead
+            of you copy-pasting names into a registrar.
+          </p>
+          <div style="display: grid; gap: 16px; grid-template-columns: 1fr 1fr; margin-top: 20px" class="io">
+            <div>
+              <h3 style="font-size: 0.95rem; margin: 0 0 8px">You (or Claude) send</h3>
+              <pre><code>{
+  "name": "perfectreview",
+  "tld": "ai"
+}</code></pre>
+              <p style="color: var(--muted); font-size: 0.86rem">
+                Whitespace is trimmed, everything is lower-cased, <code>.AI</code> becomes
+                <code>ai</code>, and full URLs like <code>https://perfectreview.ai</code> are rejected.
+              </p>
+            </div>
+            <div>
+              <h3 style="font-size: 0.95rem; margin: 0 0 8px">You get back</h3>
+              <pre><code>Domain: perfectreview.ai
+Status: AVAILABLE
+TLD Valid: Yes
+Check Method: WHOIS
+Lookup Time: 704ms</code></pre>
+              <p style="color: var(--muted); font-size: 0.86rem">
+                Plus a structured JSON payload so the assistant can reason over the result reliably.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <h2>Quick test</h2>
-      <pre><code>curl -s -X POST https://THIS-HOST/mcp \
+      <!-- ADD TO CLAUDE -->
+      <section id="add-to-claude">
+        <div class="wrap">
+          <p class="eyebrow">Setup &middot; 30 seconds</p>
+          <h2>Add it to Claude</h2>
+          <div class="tabs" role="tablist">
+            <button class="tab-btn" role="tab" aria-selected="true" data-tab="web">Claude.ai / Desktop</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="code">Claude Code</button>
+            <button class="tab-btn" role="tab" aria-selected="false" data-tab="cursor">Cursor / others</button>
+          </div>
+
+          <div class="tab-panel" data-panel="web">
+            <div class="steps">
+              <div class="step">
+                <div>
+                  <h3>Open connector settings</h3>
+                  <p>In Claude, go to <strong>Settings &rarr; Connectors</strong> (some plans:
+                    <strong>Feature preview &rarr; Model Context Protocol</strong>).</p>
+                </div>
+              </div>
+              <div class="step">
+                <div>
+                  <h3>Add a custom connector</h3>
+                  <p>Click <strong>Add custom connector</strong>. Name it <code>Domain Checker</code>
+                    and paste the URL:</p>
+                  <div class="endpoint-row" style="margin-top: 8px">
+                    <code>https://domain-checker-mcp.vercel.app/mcp</code>
+                    <button class="copy-btn" data-copy="ENDPOINT" type="button">Copy</button>
+                  </div>
+                </div>
+              </div>
+              <div class="step">
+                <div>
+                  <h3>Enable it and ask</h3>
+                  <p>Save (no login needed). In a chat, turn on <strong>Domain Checker</strong> from the
+                    tools menu, then ask a question. Approve the tool call when prompted.</p>
+                  <p class="sm">Remote connectors need Claude Pro, Max, Team or Enterprise. On a free
+                    plan, run it locally over stdio &mdash; see the README.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="code" hidden>
+            <p style="color: var(--fg-soft); margin-top: 0">One command:</p>
+            <pre><code>claude mcp add --transport http domain-checker https://domain-checker-mcp.vercel.app/mcp</code></pre>
+            <p style="color: var(--muted); font-size: 0.88rem">
+              Then <code>claude mcp list</code> should show it as <code>&#10003; connected</code>.
+              Remove later with <code>claude mcp remove domain-checker</code>.
+            </p>
+          </div>
+
+          <div class="tab-panel" data-panel="cursor" hidden>
+            <p style="color: var(--fg-soft); margin-top: 0">
+              Any MCP client works. Add to its config (e.g. <code>.cursor/mcp.json</code>):
+            </p>
+            <pre><code>{
+  "mcpServers": {
+    "domain-checker": {
+      "url": "https://domain-checker-mcp.vercel.app/mcp"
+    }
+  }
+}</code></pre>
+          </div>
+
+          <h3 style="font-size: 1rem; margin: 26px 0 8px">Prompts to try</h3>
+          <pre><code>Check perfectreview.ai
+Is perfectreview.com available?
+Check whether mybrand.io is available
+Which of acme.dev, acme.io and acme.ai are free?</code></pre>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section id="features">
+        <div class="wrap">
+          <p class="eyebrow">Built for production</p>
+          <h2>What&rsquo;s inside</h2>
+          <div class="grid" style="margin-top: 18px">
+            <div class="feat"><div class="ico">🎯</div><h3>One clear tool</h3><p>Name + TLD in, a clean AVAILABLE / NOT AVAILABLE status out &mdash; plus structured JSON.</p></div>
+            <div class="feat"><div class="ico">🌐</div><h3>Any TLD</h3><p>.com, .ai, .io, .dev, .co.uk&hellip; generic validation, nothing hard-coded.</p></div>
+            <div class="feat"><div class="ico">🧹</div><h3>Forgiving input</h3><p>Trims spaces, lower-cases, turns <code>.AI</code> into <code>ai</code>, rejects full URLs.</p></div>
+            <div class="feat"><div class="ico">⏱️</div><h3>Reliable</h3><p>Request timeouts via AbortController; rate limits and upstream errors become clean messages.</p></div>
+            <div class="feat"><div class="ico">🔒</div><h3>Safe by design</h3><p>API key stays server-side &mdash; never in responses or logs. No user-controlled URLs, no SSRF.</p></div>
+            <div class="feat"><div class="ico">⚡</div><h3>Serverless</h3><p>Stateless Streamable HTTP. One-click deploy to Vercel; also runs locally over stdio.</p></div>
+            <div class="feat"><div class="ico">🧪</div><h3>Tested</h3><p>48 unit tests, strict TypeScript, no unnecessary dependencies.</p></div>
+            <div class="feat"><div class="ico">🆓</div><h3>Open source</h3><p>MIT. Fork it, read every line, run your own copy for free.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SELF HOST -->
+      <section id="self-host">
+        <div class="wrap">
+          <p class="eyebrow">Recommended for real use</p>
+          <h2>Run your own copy &mdash; free, ~3 minutes</h2>
+          <p class="lead">
+            The shared instance above uses one rate-limited key. Your own deployment gets its own free
+            quota and can&rsquo;t be throttled by other people.
+          </p>
+          <div class="steps" style="margin-top: 20px">
+            <div class="step">
+              <div>
+                <h3>Get a free RapidAPI key</h3>
+                <p>Sign up at <a href="https://rapidapi.com/" rel="noopener">rapidapi.com</a>, open the
+                  <strong>Domain Status</strong> API, and subscribe to the free tier. Copy your
+                  <code>X-RapidAPI-Key</code>.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div>
+                <h3>Fork &amp; import to Vercel</h3>
+                <p>Fork
+                  <a href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">the repo</a>,
+                  then import it at <a href="https://vercel.com/new" rel="noopener">vercel.com/new</a>.
+                  The bundled <code>vercel.json</code> configures everything.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div>
+                <h3>Set the key &amp; deploy</h3>
+                <p>Add an environment variable <code>RAPIDAPI_KEY</code> with your real key (replace the
+                  detected placeholder), then <strong>Deploy</strong>.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div>
+                <h3>Connect your URL to Claude</h3>
+                <p>Use <code>https://&lt;your-project&gt;.vercel.app/mcp</code> in the
+                  <a href="#add-to-claude">steps above</a>. Verify with
+                  <code>/health</code> &mdash; it should report <code>"configured": true</code>.</p>
+              </div>
+            </div>
+          </div>
+          <p style="margin-top: 22px">
+            <a class="btn" href="https://github.com/LearnerSumit/domain-checker-mcp#readme" rel="noopener">
+              Full README &amp; docs
+            </a>
+          </p>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS -->
+      <section id="how">
+        <div class="wrap">
+          <p class="eyebrow">Under the hood</p>
+          <h2>How a check flows</h2>
+          <div class="flow" style="margin: 18px 0 22px">
+            <span>Claude</span><span class="arr">&rarr;</span>
+            <span>HTTPS</span><span class="arr">&rarr;</span>
+            <span>Vercel function (MCP server)</span><span class="arr">&rarr;</span>
+            <span>validate &amp; normalize</span><span class="arr">&rarr;</span>
+            <span>Domain Status API</span><span class="arr">&rarr;</span>
+            <span>WHOIS / DNS</span>
+          </div>
+          <p class="lead">
+            The server is stateless: every request is independent, nothing about your queries is stored,
+            and logs contain no personal data or secrets. The upstream API key lives only in the
+            server&rsquo;s environment.
+          </p>
+          <h3 style="font-size: 1rem; margin: 22px 0 8px">Quick API test</h3>
+          <pre><code>curl -s -X POST https://domain-checker-mcp.vercel.app/mcp \
   -H 'content-type: application/json' \
   -H 'accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code></pre>
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
+       "params":{"name":"check_domain_availability",
+                 "arguments":{"name":"perfectreview","tld":"ai"}}}'</code></pre>
+        </div>
+      </section>
 
-      <p>
-        Health check: <a href="/health">/health</a> &nbsp;·&nbsp; Tool: <code>check_domain_availability</code>
-      </p>
-
-      <footer>
-        Open source · deploy your own copy in ~3 minutes.
-        See the
-        <a href="https://github.com/LearnerSumit/domain-checker-mcp">GitHub repository</a>
-        for setup and the free RapidAPI key it needs.
-      </footer>
+      <!-- FAQ -->
+      <section id="faq">
+        <div class="wrap">
+          <p class="eyebrow">FAQ</p>
+          <h2>Questions</h2>
+          <div style="margin-top: 18px">
+            <details open>
+              <summary>How do I check domain availability in Claude?</summary>
+              <p>Add this server&rsquo;s endpoint (<code>https://domain-checker-mcp.vercel.app/mcp</code>)
+                as a custom connector in Claude&rsquo;s settings, enable it in a chat, and ask something
+                like &ldquo;is mybrand.ai available?&rdquo;. Claude calls the
+                <code>check_domain_availability</code> tool and reports the result.</p>
+            </details>
+            <details>
+              <summary>What is an MCP server, in plain terms?</summary>
+              <p>It&rsquo;s a small web service that exposes &ldquo;tools&rdquo; an AI assistant can call
+                during a conversation. Instead of the model guessing whether a domain is taken, it
+                actually runs a lookup. This one exposes exactly one tool.</p>
+            </details>
+            <details>
+              <summary>Is it really free? What&rsquo;s the catch?</summary>
+              <p>The code is MIT-licensed and free. The hosted instance shares a single free API key, so
+                it&rsquo;s rate-limited and best for trying things out. For regular use, deploy your own
+                copy &mdash; it takes about 3 minutes and uses your own free RapidAPI quota.</p>
+            </details>
+            <details>
+              <summary>Which domains and TLDs can I check?</summary>
+              <p>Any syntactically valid domain and TLD: <code>.com</code>, <code>.ai</code>,
+                <code>.io</code>, <code>.co</code>, <code>.dev</code>, <code>.app</code>, and multi-level
+                TLDs like <code>.co.uk</code>. The TLD list is not hard-coded &mdash; validation is
+                generic.</p>
+            </details>
+            <details>
+              <summary>Does it work with ChatGPT, Cursor, or other tools?</summary>
+              <p>Yes. It speaks the standard MCP Streamable HTTP transport, so any MCP-compatible client
+                can connect with just the URL &mdash; Claude, Claude Code, Cursor, and others that
+                support remote MCP connectors.</p>
+            </details>
+            <details>
+              <summary>How accurate is the result?</summary>
+              <p>Availability is derived from WHOIS/DNS via the upstream Domain Status API. It&rsquo;s a
+                strong signal but not a purchase guarantee &mdash; always confirm at a registrar before
+                relying on it. Some registries also reserve or premium-price names that look
+                &ldquo;available&rdquo;.</p>
+            </details>
+            <details>
+              <summary>Do you store my queries?</summary>
+              <p>No. The server is stateless and keeps no database. Operational logs record events like
+                &ldquo;request started/completed&rdquo; and the domain checked, without personal data,
+                and never the API key.</p>
+            </details>
+            <details>
+              <summary>I got a &ldquo;rate limiting&rdquo; message.</summary>
+              <p>The shared instance&rsquo;s free upstream tier allows very few requests per window, and
+                there&rsquo;s a per-client cap on top. Wait a few seconds, or
+                <a href="#self-host">run your own copy</a>.</p>
+            </details>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="frow">
+          <strong style="color: var(--fg-soft)">Domain Checker MCP</strong>
+          <a href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">GitHub</a>
+          <a href="https://github.com/LearnerSumit/domain-checker-mcp/blob/main/LICENSE" rel="noopener">MIT License</a>
+          <a href="/health">/health</a>
+          <a href="https://modelcontextprotocol.io" rel="noopener">About MCP</a>
+        </div>
+        <p style="margin: 12px 0 0">
+          Open source &middot; built with the MCP TypeScript SDK v2 and deployed on Vercel.
+          Not affiliated with Anthropic.
+        </p>
+      </div>
+    </footer>
+
     <script>
-      // Show the real host this page is served from.
       (function () {
         var origin = location.origin;
-        document.getElementById("endpoint").textContent = origin + "/mcp";
+        var endpoint = origin + "/mcp";
+
+        // Reflect the real host everywhere.
+        var epEl = document.getElementById("endpoint");
+        if (epEl) epEl.textContent = endpoint;
         document.querySelectorAll("code").forEach(function (el) {
-          el.innerHTML = el.innerHTML.split("https://THIS-HOST").join(origin);
+          if (el.textContent.indexOf("domain-checker-mcp.vercel.app") !== -1) {
+            el.textContent = el.textContent.replace(
+              /https:\/\/domain-checker-mcp\.vercel\.app/g,
+              origin
+            );
+          }
         });
+
+        // Copy buttons.
+        document.querySelectorAll("[data-copy]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var text = btn.getAttribute("data-copy") === "ENDPOINT" ? endpoint : btn.getAttribute("data-copy");
+            navigator.clipboard.writeText(text).then(function () {
+              var old = btn.textContent;
+              btn.textContent = "Copied ✓";
+              setTimeout(function () { btn.textContent = old; }, 1400);
+            });
+          });
+        });
+
+        // Tabs.
+        var tabBtns = document.querySelectorAll(".tab-btn");
+        tabBtns.forEach(function (b) {
+          b.addEventListener("click", function () {
+            tabBtns.forEach(function (x) { x.setAttribute("aria-selected", "false"); });
+            b.setAttribute("aria-selected", "true");
+            var name = b.getAttribute("data-tab");
+            document.querySelectorAll(".tab-panel").forEach(function (p) {
+              p.hidden = p.getAttribute("data-panel") !== name;
+            });
+          });
+        });
+
+        // Live domain check via the MCP endpoint (same origin -> no CORS).
+        var form = document.getElementById("checkForm");
+        var input = document.getElementById("domainInput");
+        var btn = document.getElementById("checkBtn");
+        var out = document.getElementById("result");
+
+        function parseMcpBody(text) {
+          var line = text.split("\n").find(function (l) { return l.indexOf("data:") === 0; });
+          return JSON.parse(line ? line.slice(5).trim() : text);
+        }
+
+        function splitDomain(raw) {
+          var v = (raw || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+          v = v.replace(/^\.+/, "").replace(/\.+$/, "");
+          var dot = v.indexOf(".");
+          if (dot <= 0 || dot === v.length - 1) return null;
+          return { name: v.slice(0, dot), tld: v.slice(dot + 1) };
+        }
+
+        function render(html, cls) {
+          out.className = "result show";
+          out.innerHTML = html;
+          if (cls) out.classList.add(cls);
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var parts = splitDomain(input.value);
+          if (!parts) {
+            render(
+              '<span class="status err">Invalid</span> Enter a domain like <code>mybrand.ai</code> (name and TLD).'
+            );
+            return;
+          }
+          btn.disabled = true;
+          render('<span class="spinner"></span> Checking <strong>' + parts.name + "." + parts.tld + "</strong>&hellip;");
+
+          fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              accept: "application/json, text/event-stream",
+            },
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              id: 1,
+              method: "tools/call",
+              params: { name: "check_domain_availability", arguments: parts },
+            }),
+          })
+            .then(function (r) { return r.text(); })
+            .then(function (text) {
+              var msg = parseMcpBody(text);
+              var res = msg.result || {};
+              var sc = res.structuredContent;
+              if (res.isError || !sc) {
+                var errText = (res.content && res.content[0] && res.content[0].text) || "Something went wrong.";
+                render('<span class="status err">Error</span> ' + escapeHtml(errText));
+                return;
+              }
+              var available = sc.available;
+              var domain = escapeHtml(sc.domain);
+              var method = sc.checkMethod ? String(sc.checkMethod).toUpperCase() : "—";
+              var tldValid = sc.tldValid === null ? "unknown" : sc.tldValid ? "valid" : "invalid";
+              render(
+                '<span class="domain">' + domain + "</span>" +
+                  '<span class="status ' + (available ? "ok" : "no") + '">' +
+                  (available ? "Available" : "Not available") + "</span>" +
+                  '<div class="meta">TLD ' + tldValid + " &middot; checked via " + method +
+                  (sc.elapsed ? " &middot; " + escapeHtml(sc.elapsed) : "") + "</div>"
+              );
+            })
+            .catch(function () {
+              render('<span class="status err">Error</span> Could not reach the MCP endpoint. Try again in a moment.');
+            })
+            .finally(function () { btn.disabled = false; });
+        });
+
+        function escapeHtml(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
+        }
       })();
     </script>
   </body>

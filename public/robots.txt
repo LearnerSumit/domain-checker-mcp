@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /$
+Allow: /index.html
+Disallow: /mcp
+Disallow: /api/
+Disallow: /health
+
+Sitemap: https://domain-checker-mcp.vercel.app/sitemap.xml
