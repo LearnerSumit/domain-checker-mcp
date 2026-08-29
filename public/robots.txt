@@ -1,8 +1,49 @@
+# Domain Checker MCP — https://domain-checker-mcp.vercel.app
+# All crawlers, including AI answer engines (Google AI Overviews / AI Mode,
+# ChatGPT Search, Gemini, Perplexity, Claude), are welcome to crawl, index
+# and cite this page. Only the machine endpoints are off-limits.
+
 User-agent: *
-Allow: /$
-Allow: /index.html
+Allow: /
 Disallow: /mcp
 Disallow: /api/
-Disallow: /health
+
+# --- AI search assistants & answer engines: explicitly allowed ---
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
 
 Sitemap: https://domain-checker-mcp.vercel.app/sitemap.xml

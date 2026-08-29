@@ -71,11 +71,59 @@
                 "https://www.linkedin.com/in/sumitkumar7761/"
               ]
             },
-            "codeRepository": "https://github.com/LearnerSumit/domain-checker-mcp"
+            "codeRepository": "https://github.com/LearnerSumit/domain-checker-mcp",
+            "featureList": [
+              "Check domain-name availability from an AI assistant",
+              "Single MCP tool: check_domain_availability",
+              "Supports any TLD (.com, .ai, .io, .co.uk, ...)",
+              "Stateless Streamable HTTP transport",
+              "Self-hostable on Vercel"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "name": "Domain Checker MCP",
+            "url": "https://domain-checker-mcp.vercel.app/",
+            "description": "Add one URL to Claude and check whether a domain name is available for registration.",
+            "publisher": { "@type": "Person", "name": "Sumit Kumar", "url": "https://github.com/LearnerSumit" }
+          },
+          {
+            "@type": "HowTo",
+            "name": "Add Domain Checker MCP to Claude",
+            "description": "Connect the Domain Checker MCP server to Claude as a custom connector so Claude can check domain availability.",
+            "totalTime": "PT1M",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "position": 1,
+                "name": "Open connector settings",
+                "text": "In Claude, go to Settings, then Connectors (on some plans: Feature preview, then Model Context Protocol)."
+              },
+              {
+                "@type": "HowToStep",
+                "position": 2,
+                "name": "Add a custom connector",
+                "text": "Click 'Add custom connector'. Name it 'Domain Checker' and paste the URL https://domain-checker-mcp.vercel.app/mcp"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 3,
+                "name": "Enable it and ask",
+                "text": "Save (no login needed). Enable 'Domain Checker' in a chat, then ask a question such as 'check mybrand.ai'. Approve the tool call when prompted."
+              }
+            ]
           },
           {
             "@type": "FAQPage",
             "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is Domain Checker MCP?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Domain Checker MCP is a free, open-source MCP (Model Context Protocol) server. You add its URL (https://domain-checker-mcp.vercel.app/mcp) to an AI assistant such as Claude, ChatGPT or Gemini as a custom connector, and it exposes one tool, check_domain_availability, that reports whether a domain name is available for registration using WHOIS/DNS data."
+                }
+              },
               {
                 "@type": "Question",
                 "name": "How do I check domain availability in Claude?",
@@ -621,6 +669,15 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
           <h2>Questions</h2>
           <div style="margin-top: 18px">
             <details open>
+              <summary>What is Domain Checker MCP?</summary>
+              <p>Domain Checker MCP is a free, open-source
+                <a href="https://modelcontextprotocol.io">MCP</a> server. You add its URL
+                (<code>https://domain-checker-mcp.vercel.app/mcp</code>) to an AI assistant such as
+                Claude, ChatGPT or Gemini as a custom connector, and it gives the assistant one tool,
+                <code>check_domain_availability</code>, that reports whether a domain name is available
+                for registration using WHOIS/DNS data.</p>
+            </details>
+            <details>
               <summary>How do I check domain availability in Claude?</summary>
               <p>Add this server&rsquo;s endpoint (<code>https://domain-checker-mcp.vercel.app/mcp</code>)
                 as a custom connector in Claude&rsquo;s settings, enable it in a chat, and ask something

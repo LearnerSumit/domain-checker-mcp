@@ -1,0 +1,49 @@
+# Domain Checker MCP
+
+> A free, open-source MCP (Model Context Protocol) server that lets AI assistants
+> such as Claude, ChatGPT and Gemini check whether a domain name is available for
+> registration. Add one HTTPS URL as a custom connector, then ask in natural
+> language: "is mybrand.ai available?".
+
+## Key facts
+
+- Name: Domain Checker MCP
+- What it is: a remote MCP server exposing a single tool, `check_domain_availability`
+- MCP endpoint (add this to an MCP client): https://domain-checker-mcp.vercel.app/mcp
+- Website: https://domain-checker-mcp.vercel.app
+- Health check: https://domain-checker-mcp.vercel.app/health
+- Transport: stateless Streamable HTTP (MCP specification 2026-07-28)
+- Tool input: `{ "name": "mybrand", "tld": "ai" }` — name and TLD as separate strings
+- Tool output: availability (AVAILABLE / NOT AVAILABLE), whether the TLD is valid,
+  the lookup method used (usually WHOIS or DNS), and lookup time
+- Data source: RapidAPI "Domain Status" API (WHOIS / DNS based)
+- Price: free. License: MIT.
+- Self-hosting: fork the repo, set a free RAPIDAPI_KEY, deploy to Vercel (~3 minutes)
+- Source code: https://github.com/LearnerSumit/domain-checker-mcp
+- Author: Sumit Kumar — https://github.com/LearnerSumit — https://www.linkedin.com/in/sumitkumar7761/
+
+## How to use it in Claude
+
+1. Claude → Settings → Connectors → "Add custom connector".
+2. Name: "Domain Checker". URL: https://domain-checker-mcp.vercel.app/mcp
+3. Save (no authentication needed), enable it in a chat, then ask e.g. "check mybrand.ai".
+
+Remote MCP connectors require Claude Pro, Max, Team or Enterprise. On the free plan the
+server can be run locally over the stdio transport instead.
+
+## How to use it in other clients
+
+- Claude Code: `claude mcp add --transport http domain-checker https://domain-checker-mcp.vercel.app/mcp`
+- Cursor / other MCP clients: add `{ "mcpServers": { "domain-checker": { "url": "https://domain-checker-mcp.vercel.app/mcp" } } }`
+
+## Common questions
+
+- Is it free? Yes. The shared hosted instance is rate-limited; self-host for your own quota.
+- Which TLDs work? Any valid TLD — .com, .ai, .io, .co, .dev, .app, .co.uk, etc. Nothing is hard-coded.
+- Does it store queries? No. The server is stateless and keeps no database.
+- How accurate is it? WHOIS/DNS signal — strong, but confirm at a registrar before purchasing.
+
+## Documentation
+
+- README: https://github.com/LearnerSumit/domain-checker-mcp/blob/main/README.md
+- About MCP: https://modelcontextprotocol.io
