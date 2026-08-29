@@ -131,10 +131,6 @@
         --code-bg: #f4f5f8;
         --accent: #3257e8;
         --accent-fg: #ffffff;
-        --ok-bg: #e7f6ec;
-        --ok-fg: #10673a;
-        --no-bg: #fdecec;
-        --no-fg: #a3272b;
         --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
         --radius: 14px;
       }
@@ -150,10 +146,6 @@
           --code-bg: #0f1115;
           --accent: #6d8bff;
           --accent-fg: #0a0b0d;
-          --ok-bg: #12301f;
-          --ok-fg: #7ee2a8;
-          --no-bg: #3a1618;
-          --no-fg: #ff9ca0;
           --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
         }
       }
@@ -264,38 +256,6 @@
         border-radius: 8px; padding: 8px 12px; font-size: 0.82rem; font-weight: 600; cursor: pointer;
       }
       .copy-btn:hover { color: var(--fg); }
-
-      /* Try widget */
-      .try-card {
-        background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-        box-shadow: var(--shadow); padding: 22px;
-      }
-      .try-form { display: flex; flex-wrap: wrap; gap: 10px; }
-      .try-form input {
-        flex: 1 1 240px; font: inherit; font-size: 1rem; padding: 12px 14px; border-radius: 10px;
-        border: 1px solid var(--border); background: var(--bg); color: var(--fg);
-      }
-      .try-form button { flex: none; }
-      .try-hint { color: var(--muted); font-size: 0.86rem; margin: 10px 0 0; }
-      .result {
-        margin-top: 16px; border: 1px solid var(--border); border-radius: 12px; padding: 16px;
-        background: var(--bg-alt); display: none;
-      }
-      .result.show { display: block; }
-      .result .status {
-        display: inline-flex; align-items: center; gap: 7px; font-weight: 700; font-size: 0.9rem;
-        padding: 4px 10px; border-radius: 999px;
-      }
-      .result .status.ok { background: var(--ok-bg); color: var(--ok-fg); }
-      .result .status.no { background: var(--no-bg); color: var(--no-fg); }
-      .result .status.err { background: var(--no-bg); color: var(--no-fg); }
-      .result .domain { font-weight: 680; font-size: 1.1rem; margin-right: 10px; }
-      .result .meta { color: var(--muted); font-size: 0.88rem; margin-top: 8px; }
-      .spinner {
-        width: 15px; height: 15px; border: 2px solid currentColor; border-right-color: transparent;
-        border-radius: 50%; display: inline-block; animation: spin 0.7s linear infinite;
-      }
-      @keyframes spin { to { transform: rotate(360deg); } }
 
       /* Generic blocks */
       pre {
@@ -441,39 +401,6 @@
           </div>
         </div>
       </div>
-
-      <!-- TRY IT -->
-      <section id="try">
-        <div class="wrap">
-          <p class="eyebrow">Try it right now</p>
-          <h2>Type a domain &mdash; this page checks it live</h2>
-          <p class="lead" style="margin-bottom: 20px">
-            This calls the same <code>check_domain_availability</code> tool Claude would call, against
-            the live endpoint above.
-          </p>
-          <div class="try-card">
-            <form class="try-form" id="checkForm">
-              <input
-                id="domainInput"
-                type="text"
-                inputmode="url"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-                placeholder="perfectreview.ai"
-                aria-label="Domain name to check"
-              />
-              <button class="btn primary" type="submit" id="checkBtn">Check availability</button>
-            </form>
-            <p class="try-hint">
-              Examples: <code>mybrand.com</code>, <code>side-project.io</code>, <code>acme.co.uk</code>.
-              The shared instance is rate-limited &mdash; if you see a &ldquo;rate limiting&rdquo;
-              message, wait a few seconds.
-            </p>
-            <div class="result" id="result" aria-live="polite"></div>
-          </div>
-        </div>
-      </section>
 
       <!-- WHAT IS IT -->
       <section id="what">
@@ -840,90 +767,6 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
             });
           });
         });
-
-        // Live domain check via the MCP endpoint (same origin -> no CORS).
-        var form = document.getElementById("checkForm");
-        var input = document.getElementById("domainInput");
-        var btn = document.getElementById("checkBtn");
-        var out = document.getElementById("result");
-
-        function parseMcpBody(text) {
-          var line = text.split("\n").find(function (l) { return l.indexOf("data:") === 0; });
-          return JSON.parse(line ? line.slice(5).trim() : text);
-        }
-
-        function splitDomain(raw) {
-          var v = (raw || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-          v = v.replace(/^\.+/, "").replace(/\.+$/, "");
-          var dot = v.indexOf(".");
-          if (dot <= 0 || dot === v.length - 1) return null;
-          return { name: v.slice(0, dot), tld: v.slice(dot + 1) };
-        }
-
-        function render(html, cls) {
-          out.className = "result show";
-          out.innerHTML = html;
-          if (cls) out.classList.add(cls);
-        }
-
-        form.addEventListener("submit", function (e) {
-          e.preventDefault();
-          var parts = splitDomain(input.value);
-          if (!parts) {
-            render(
-              '<span class="status err">Invalid</span> Enter a domain like <code>mybrand.ai</code> (name and TLD).'
-            );
-            return;
-          }
-          btn.disabled = true;
-          render('<span class="spinner"></span> Checking <strong>' + parts.name + "." + parts.tld + "</strong>&hellip;");
-
-          fetch(endpoint, {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              accept: "application/json, text/event-stream",
-            },
-            body: JSON.stringify({
-              jsonrpc: "2.0",
-              id: 1,
-              method: "tools/call",
-              params: { name: "check_domain_availability", arguments: parts },
-            }),
-          })
-            .then(function (r) { return r.text(); })
-            .then(function (text) {
-              var msg = parseMcpBody(text);
-              var res = msg.result || {};
-              var sc = res.structuredContent;
-              if (res.isError || !sc) {
-                var errText = (res.content && res.content[0] && res.content[0].text) || "Something went wrong.";
-                render('<span class="status err">Error</span> ' + escapeHtml(errText));
-                return;
-              }
-              var available = sc.available;
-              var domain = escapeHtml(sc.domain);
-              var method = sc.checkMethod ? String(sc.checkMethod).toUpperCase() : "—";
-              var tldValid = sc.tldValid === null ? "unknown" : sc.tldValid ? "valid" : "invalid";
-              render(
-                '<span class="domain">' + domain + "</span>" +
-                  '<span class="status ' + (available ? "ok" : "no") + '">' +
-                  (available ? "Available" : "Not available") + "</span>" +
-                  '<div class="meta">TLD ' + tldValid + " &middot; checked via " + method +
-                  (sc.elapsed ? " &middot; " + escapeHtml(sc.elapsed) : "") + "</div>"
-              );
-            })
-            .catch(function () {
-              render('<span class="status err">Error</span> Could not reach the MCP endpoint. Try again in a moment.');
-            })
-            .finally(function () { btn.disabled = false; });
-        });
-
-        function escapeHtml(s) {
-          return String(s).replace(/[&<>"']/g, function (c) {
-            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-          });
-        }
       })();
     </script>
   </body>
