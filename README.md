@@ -410,6 +410,16 @@ connect their Claude to it:
 Node.js 20+ · TypeScript (strict) · `@modelcontextprotocol/server` v2 · `mcp-handler` v2
 (Streamable HTTP) · `zod` v4 · native `fetch` · Vitest · Vercel.
 
+## Author
+
+**Sumit Kumar**
+· [GitHub](https://github.com/LearnerSumit)
+· [LinkedIn](https://www.linkedin.com/in/sumitkumar7761/)
+· [sumitdbg255@gmail.com](mailto:sumitdbg255@gmail.com)
+
+If this saved you some time, a ⭐ on the
+[repo](https://github.com/LearnerSumit/domain-checker-mcp) is appreciated.
+
 ## License
 
 [MIT](LICENSE)

@@ -57,7 +57,16 @@
             "softwareVersion": "1.0.0",
             "license": "https://opensource.org/licenses/MIT",
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-            "author": { "@type": "Person", "name": "Sumit Kumar" },
+            "author": {
+              "@type": "Person",
+              "name": "Sumit Kumar",
+              "email": "sumitdbg255@gmail.com",
+              "url": "https://github.com/LearnerSumit",
+              "sameAs": [
+                "https://github.com/LearnerSumit",
+                "https://www.linkedin.com/in/sumitkumar7761/"
+              ]
+            },
             "codeRepository": "https://github.com/LearnerSumit/domain-checker-mcp"
           },
           {
@@ -205,6 +214,22 @@
       .nav-links a { color: var(--fg-soft); }
       @media (max-width: 620px) { .nav-links a.hide-sm { display: none; } }
 
+      .ghstar {
+        display: inline-flex; align-items: stretch; border: 1px solid var(--border);
+        border-radius: 8px; overflow: hidden; font-size: 0.85rem; font-weight: 600;
+      }
+      .ghstar:hover { text-decoration: none; border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+      .ghstar .lbl {
+        display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
+        background: var(--bg-alt); color: var(--fg-soft);
+      }
+      .ghstar .lbl svg { width: 14px; height: 14px; }
+      .ghstar .cnt {
+        display: inline-flex; align-items: center; padding: 6px 10px; background: var(--card);
+        color: var(--fg); border-left: 1px solid var(--border); min-width: 34px; justify-content: center;
+        font-variant-numeric: tabular-nums;
+      }
+
       /* Hero */
       .hero { padding: 66px 0 52px; text-align: center; }
       .hero h1 { font-size: clamp(2rem, 6vw, 3rem); margin: 0 0 16px; }
@@ -331,6 +356,22 @@
       footer { border-top: 1px solid var(--border); padding: 34px 0 60px; color: var(--muted); font-size: 0.88rem; }
       footer .frow { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; }
       footer a { color: var(--fg-soft); }
+
+      .author-card {
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        gap: 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 18px 20px; margin-bottom: 26px;
+      }
+      .author-card .k { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+      .author-card .name { font-size: 1.15rem; font-weight: 680; color: var(--fg); margin-top: 2px; }
+      .author-links { display: flex; flex-wrap: wrap; gap: 10px; }
+      .author-links a {
+        display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 0.88rem;
+        color: var(--fg-soft); border: 1px solid var(--border); border-radius: 9px; padding: 7px 12px;
+        background: var(--bg-alt);
+      }
+      .author-links a:hover { text-decoration: none; color: var(--fg); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+      .author-links a svg { width: 15px; height: 15px; }
     </style>
   </head>
 
@@ -349,7 +390,20 @@
           <a href="#add-to-claude" class="hide-sm">Add to Claude</a>
           <a href="#self-host" class="hide-sm">Self-host</a>
           <a href="#faq" class="hide-sm">FAQ</a>
-          <a href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">GitHub</a>
+          <a
+            class="ghstar"
+            href="https://github.com/LearnerSumit/domain-checker-mcp"
+            rel="noopener"
+            aria-label="Star domain-checker-mcp on GitHub"
+          >
+            <span class="lbl">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z" />
+              </svg>
+              Star
+            </span>
+            <span class="cnt js-stars">–</span>
+          </a>
         </nav>
       </div>
     </header>
@@ -371,7 +425,12 @@
         <div class="cta">
           <button class="btn primary" data-copy="ENDPOINT" type="button">Copy MCP endpoint</button>
           <a class="btn" href="#add-to-claude">How to add it &darr;</a>
-          <a class="btn" href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">View source</a>
+          <a class="btn" href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true">
+              <path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z" />
+            </svg>
+            Star on GitHub <span class="js-stars" style="opacity: 0.7">–</span>
+          </a>
         </div>
 
         <div class="endpoint-box">
@@ -688,9 +747,33 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
 
     <footer>
       <div class="wrap">
+        <div class="author-card">
+          <div>
+            <div class="k">Developed by</div>
+            <div class="name">Sumit Kumar</div>
+          </div>
+          <div class="author-links">
+            <a href="https://github.com/LearnerSumit" rel="noopener">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+              GitHub
+            </a>
+            <a href="https://www.linkedin.com/in/sumitkumar7761/" rel="noopener">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.63 13.63h-2.37V9.9c0-.89-.02-2.03-1.24-2.03-1.24 0-1.43.97-1.43 1.97v3.79H6.22V6h2.28v1.04h.03c.32-.6 1.09-1.24 2.25-1.24 2.4 0 2.85 1.58 2.85 3.64v4.19ZM3.55 4.96a1.38 1.38 0 1 1 0-2.76 1.38 1.38 0 0 1 0 2.76ZM4.74 13.63H2.36V6h2.38v7.63ZM14.82 0H1.18C.53 0 0 .52 0 1.16v13.68C0 15.48.53 16 1.18 16h13.64c.65 0 1.18-.52 1.18-1.16V1.16C16 .52 15.47 0 14.82 0Z"/></svg>
+              LinkedIn
+            </a>
+            <a href="mailto:sumitdbg255@gmail.com">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1.5 2h13A1.5 1.5 0 0 1 16 3.5v9A1.5 1.5 0 0 1 14.5 14h-13A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2Zm0 1 6.5 4.33L14.5 3h-13Zm13 1.2-6.15 4.1a.75.75 0 0 1-.83 0L1.5 4.2v8.3h13V4.2Z"/></svg>
+              Email
+            </a>
+          </div>
+        </div>
+
         <div class="frow">
           <strong style="color: var(--fg-soft)">Domain Checker MCP</strong>
-          <a href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">GitHub</a>
+          <a href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">Repository</a>
+          <a href="https://github.com/LearnerSumit/domain-checker-mcp/stargazers" rel="noopener">
+            Stars <span class="js-stars">–</span>
+          </a>
           <a href="https://github.com/LearnerSumit/domain-checker-mcp/blob/main/LICENSE" rel="noopener">MIT License</a>
           <a href="/health">/health</a>
           <a href="https://modelcontextprotocol.io" rel="noopener">About MCP</a>
@@ -706,6 +789,20 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
       (function () {
         var origin = location.origin;
         var endpoint = origin + "/mcp";
+        var REPO = "LearnerSumit/domain-checker-mcp";
+
+        // Live GitHub star count (unauthenticated API, cached by the browser).
+        function fmt(n) {
+          return n >= 1000 ? (n / 1000).toFixed(n % 1000 >= 100 ? 1 : 0) + "k" : String(n);
+        }
+        fetch("https://api.github.com/repos/" + REPO, { headers: { accept: "application/vnd.github+json" } })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (d) {
+            if (!d || typeof d.stargazers_count !== "number") return;
+            var s = fmt(d.stargazers_count);
+            document.querySelectorAll(".js-stars").forEach(function (el) { el.textContent = s; });
+          })
+          .catch(function () {});
 
         // Reflect the real host everywhere.
         var epEl = document.getElementById("endpoint");
