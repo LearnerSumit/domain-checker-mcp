@@ -24,7 +24,7 @@ export const checkDomainAvailabilityInputSchema = z.object({
     .string()
     .min(1)
     .describe(
-      'The domain name without the TLD or a leading dot, e.g. "perfectreview". Do not pass a full URL.',
+      'The domain name without the TLD or a leading dot, e.g. "mybrand". Do not pass a full URL.',
     ),
   tld: z
     .string()
@@ -70,7 +70,7 @@ export function registerCheckDomainAvailability(
       title: "Check domain availability",
       description:
         "Check whether a domain name is available for registration. Provide the name and TLD " +
-        'separately (e.g. name "perfectreview", tld "ai"). Returns availability, whether the ' +
+        'separately (e.g. name "mybrand", tld "ai"). Returns availability, whether the ' +
         "TLD is valid, and which lookup method (usually WHOIS) was used.",
       inputSchema: checkDomainAvailabilityInputSchema,
       annotations: {

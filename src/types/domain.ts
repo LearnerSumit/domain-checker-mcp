@@ -28,9 +28,9 @@ export type RapidApiDomainResponse = z.infer<typeof rapidApiDomainResponseSchema
 
 /** Clean, AI-friendly result surfaced by the MCP tool. */
 export interface DomainAvailabilityResult {
-  /** Fully-qualified domain, e.g. `perfectreview.ai`. */
+  /** Fully-qualified domain, e.g. `mybrand.ai`. */
   domain: string;
-  /** Normalised second-level name, e.g. `perfectreview`. */
+  /** Normalised second-level name, e.g. `mybrand`. */
   name: string;
   /** Normalised TLD, e.g. `ai`. */
   tld: string;

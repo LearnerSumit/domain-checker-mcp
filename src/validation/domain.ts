@@ -6,7 +6,7 @@
  *  - whitespace stripped, lower-cased
  *  - a full URL (`https://example.ai`, `example.ai/path`, ...) is rejected
  *  - a leading dot on the TLD (`.ai`) is normalised away
- *  - a redundant `name` that already includes the TLD (`perfectreview.ai` + `ai`)
+ *  - a redundant `name` that already includes the TLD (`mybrand.ai` + `ai`)
  *    is de-duplicated
  *  - only valid DNS label characters remain
  *  - generic length limits (RFC 1035) are enforced — TLDs are NOT hard-coded
@@ -15,7 +15,7 @@
 import { ValidationError } from "../utils/errors.js";
 
 export interface NormalizedDomain {
-  /** Second-level name, e.g. `perfectreview` (may contain dots for sub-labels). */
+  /** Second-level name, e.g. `mybrand` (may contain dots for sub-labels). */
   name: string;
   /** TLD without a leading dot, e.g. `ai` or `co.uk`. */
   tld: string;
@@ -46,7 +46,7 @@ function assertLabels(value: string, kind: "name" | "tld"): void {
     if (!LABEL_RE.test(label)) {
       throw new ValidationError(
         kind === "name"
-          ? "Invalid domain name. Provide just the name (letters, digits and hyphens), e.g. \"perfectreview\" — not a URL."
+          ? "Invalid domain name. Provide just the name (letters, digits and hyphens), e.g. \"mybrand\" — not a URL."
           : "Invalid TLD. Use letters/digits only, e.g. \"ai\", \"com\" or \"co.uk\".",
       );
     }
@@ -66,7 +66,7 @@ export function normalizeAndValidateDomain(
   // Reject full URLs / paths / anything that is clearly not a bare name.
   if (URL_LIKE_RE.test(name) || name.includes("..")) {
     throw new ValidationError(
-      "Invalid domain name. Pass only the domain name (e.g. \"perfectreview\"), not a URL such as \"https://perfectreview.ai\".",
+      "Invalid domain name. Pass only the domain name (e.g. \"mybrand\"), not a URL such as \"https://mybrand.ai\".",
     );
   }
 
@@ -79,7 +79,7 @@ export function normalizeAndValidateDomain(
   }
 
   // Trim a trailing dot and a redundant TLD suffix on the name:
-  //   name="perfectreview.ai", tld="ai"  ->  name="perfectreview"
+  //   name="mybrand.ai", tld="ai"  ->  name="mybrand"
   name = name.replace(/\.+$/, "");
   if (tld && name.endsWith(`.${tld}`)) {
     name = name.slice(0, -1 * (tld.length + 1));

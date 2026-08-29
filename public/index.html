@@ -417,17 +417,17 @@
             <div>
               <h3 style="font-size: 0.95rem; margin: 0 0 8px">You (or Claude) send</h3>
               <pre><code>{
-  "name": "perfectreview",
+  "name": "mybrand",
   "tld": "ai"
 }</code></pre>
               <p style="color: var(--muted); font-size: 0.86rem">
                 Whitespace is trimmed, everything is lower-cased, <code>.AI</code> becomes
-                <code>ai</code>, and full URLs like <code>https://perfectreview.ai</code> are rejected.
+                <code>ai</code>, and full URLs like <code>https://mybrand.ai</code> are rejected.
               </p>
             </div>
             <div>
               <h3 style="font-size: 0.95rem; margin: 0 0 8px">You get back</h3>
-              <pre><code>Domain: perfectreview.ai
+              <pre><code>Domain: mybrand.ai
 Status: AVAILABLE
 TLD Valid: Yes
 Check Method: WHOIS
@@ -506,8 +506,8 @@ Lookup Time: 704ms</code></pre>
           </div>
 
           <h3 style="font-size: 1rem; margin: 26px 0 8px">Prompts to try</h3>
-          <pre><code>Check perfectreview.ai
-Is perfectreview.com available?
+          <pre><code>Check mybrand.ai
+Is mybrand.com available?
 Check whether mybrand.io is available
 Which of acme.dev, acme.io and acme.ai are free?</code></pre>
         </div>
@@ -606,7 +606,7 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
   -H 'accept: application/json, text/event-stream' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
        "params":{"name":"check_domain_availability",
-                 "arguments":{"name":"perfectreview","tld":"ai"}}}'</code></pre>
+                 "arguments":{"name":"mybrand","tld":"ai"}}}'</code></pre>
         </div>
       </section>
 

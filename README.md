@@ -4,7 +4,7 @@ A production-ready **remote MCP (Model Context Protocol) server** that lets AI a
 such as **Claude** check whether a domain name is available for registration — powered by
 the [RapidAPI **Domain Status**](https://rapidapi.com/) API.
 
-> _"Check whether perfectreview.ai is available."_
+> _"Check whether mybrand.ai is available."_
 > → Claude calls the `check_domain_availability` tool → clean, structured answer.
 
 - **Transport:** stateless **Streamable HTTP** (MCP spec `2026-07-28`, `mcp-handler` v2 / MCP SDK v2)
@@ -50,12 +50,12 @@ return "rate limiting" messages under load — for anything real,
 | | |
 | --- | --- |
 | **Tool** | `check_domain_availability` |
-| **Input** | `{ "name": "perfectreview", "tld": "ai" }` (both required strings) |
+| **Input** | `{ "name": "mybrand", "tld": "ai" }` (both required strings) |
 | **Output** | Readable text + `structuredContent` (`available`, `tldValid`, `checkMethod`, …) |
 
 Input is normalised before the upstream call: trimmed, lower-cased, a leading dot on the
 TLD is removed (`.AI` → `ai`), a redundant TLD in the name is de-duplicated
-(`perfectreview.ai` + `ai` → `perfectreview`), and full URLs / invalid characters are
+(`mybrand.ai` + `ai` → `mybrand`), and full URLs / invalid characters are
 rejected with a safe message.
 
 ---
@@ -142,14 +142,14 @@ Add to the client's MCP config (e.g. `.cursor/mcp.json`):
 ### Prompts to try
 
 ```
-Check perfectreview.ai
-Is perfectreview.com available?
+Check mybrand.ai
+Is mybrand.com available?
 Check whether mybrand.io is available
 Are any of these free: acme.dev, acme.io, acme.ai?
 ```
 
 Claude should call `check_domain_availability` with, e.g.,
-`{ "name": "perfectreview", "tld": "ai" }` and report the status.
+`{ "name": "mybrand", "tld": "ai" }` and report the status.
 
 ---
 
@@ -248,7 +248,7 @@ Test the running dev server with the Inspector (**Streamable HTTP**, URL
 ```bash
 curl -s -X POST http://localhost:3000/mcp \
   -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"check_domain_availability","arguments":{"name":"perfectreview","tld":"ai"}}}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"check_domain_availability","arguments":{"name":"mybrand","tld":"ai"}}}'
 ```
 
 ---
@@ -301,21 +301,21 @@ Claude ──HTTPS──▶ Vercel Function (api/mcp.ts)
 **Input schema** — both fields required strings:
 
 ```json
-{ "name": "perfectreview", "tld": "ai" }
+{ "name": "mybrand", "tld": "ai" }
 ```
 
 | Input | Behaviour |
 | --- | --- |
-| `{ "name": " PerfectReview ", "tld": ".AI" }` | → `{ "name": "perfectreview", "tld": "ai" }` |
-| `{ "name": "perfectreview.ai", "tld": "ai" }` | → `{ "name": "perfectreview", "tld": "ai" }` |
-| `{ "name": "https://perfectreview.ai", "tld": "ai" }` | ❌ rejected — _"…not a URL"_ |
+| `{ "name": " MyBrand ", "tld": ".AI" }` | → `{ "name": "mybrand", "tld": "ai" }` |
+| `{ "name": "mybrand.ai", "tld": "ai" }` | → `{ "name": "mybrand", "tld": "ai" }` |
+| `{ "name": "https://mybrand.ai", "tld": "ai" }` | ❌ rejected — _"…not a URL"_ |
 | `{ "name": "hello world", "tld": "com" }` | ❌ rejected — _"Invalid domain name."_ |
 | any TLD (`com`, `ai`, `io`, `co`, `dev`, `co.uk`, …) | ✅ generic validation, nothing hard-coded |
 
 **Result:**
 
 ```
-Domain: perfectreview.ai
+Domain: mybrand.ai
 Status: AVAILABLE
 TLD Valid: Yes
 Check Method: WHOIS
@@ -324,8 +324,8 @@ Lookup Time: 918ms
 
 ```jsonc
 {
-  "domain": "perfectreview.ai",
-  "name": "perfectreview",
+  "domain": "mybrand.ai",
+  "name": "mybrand",
   "tld": "ai",
   "available": true,
   "tldValid": true,
