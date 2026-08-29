@@ -13,6 +13,23 @@ the [RapidAPI **Domain Status**](https://rapidapi.com/) API.
 
 ---
 
+## Live instance
+
+A hosted instance is running here:
+
+| | |
+| --- | --- |
+| **MCP endpoint** | `https://domain-checker-mcp.vercel.app/mcp` |
+| **Landing page** | <https://domain-checker-mcp.vercel.app> |
+| **Health** | <https://domain-checker-mcp.vercel.app/health> |
+
+Add that endpoint URL to Claude ([step by step below](#use-it-in-claude--step-by-step)) and start
+asking. It shares one free RapidAPI key across everyone, so it is rate-limited and may
+return "rate limiting" messages under load — for anything real,
+[run your own copy](#run-your-own-copy-recommended) (free, ~3 minutes).
+
+---
+
 ## Table of contents
 
 1. [What it does](#what-it-does)
@@ -45,9 +62,9 @@ rejected with a safe message.
 
 ## Use it in Claude — step by step
 
-> This works once the server is deployed and you have its URL, e.g.
-> `https://your-project.vercel.app/mcp`. If you don't have a URL yet, first do
-> [Run your own copy](#run-your-own-copy-recommended).
+> Examples below use the [live instance](#live-instance)
+> (`https://domain-checker-mcp.vercel.app/mcp`). If you deployed your own, swap in
+> `https://<your-project>.vercel.app/mcp`.
 
 ### A. Claude.ai (web) or Claude Desktop — custom connector
 
@@ -56,7 +73,7 @@ rejected with a safe message.
 3. Click **Add custom connector** (or **Add connector → Custom**).
 4. Fill in:
    - **Name:** `Domain Checker`
-   - **URL:** `https://your-project.vercel.app/mcp`   ← note the `/mcp` path
+   - **URL:** `https://domain-checker-mcp.vercel.app/mcp`   ← note the `/mcp` path
 5. Click **Add** / **Save**. The connector needs no authentication.
 6. Open a chat. Click the **connectors / tools** button (🔌 or the slider icon near the
    prompt box) and make sure **Domain Checker** is enabled for the conversation.
@@ -70,14 +87,14 @@ rejected with a safe message.
 ### B. Claude Code (CLI)
 
 ```bash
-claude mcp add --transport http domain-checker https://your-project.vercel.app/mcp
+claude mcp add --transport http domain-checker https://domain-checker-mcp.vercel.app/mcp
 ```
 
 Verify:
 
 ```bash
 claude mcp list
-# domain-checker   http   https://your-project.vercel.app/mcp   ✓ connected
+# domain-checker   http   https://domain-checker-mcp.vercel.app/mcp   ✓ connected
 ```
 
 Then in a Claude Code session just ask: *"Is mybrand.io available?"*
@@ -117,7 +134,7 @@ Add to the client's MCP config (e.g. `.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
-    "domain-checker": { "url": "https://your-project.vercel.app/mcp" }
+    "domain-checker": { "url": "https://domain-checker-mcp.vercel.app/mcp" }
   }
 }
 ```
@@ -151,7 +168,7 @@ bill. Takes ~3 minutes.
 ### 2. Get the code
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/domain-checker-mcp.git
+git clone https://github.com/LearnerSumit/domain-checker-mcp.git
 cd domain-checker-mcp
 npm install
 ```
@@ -165,15 +182,18 @@ npm install
 1. Push your copy to GitHub (`git push`).
 2. Go to <https://vercel.com/new> and **import** the repository.
 3. Leave build settings as detected (the included `vercel.json` handles everything —
-   no framework, no build command).
-4. Click **Deploy**.
-5. Open **Project → Settings → Environment Variables** and add:
+   no framework, no build command). Application Preset "Node" is fine.
+4. Expand **Environment Variables**. Vercel pre-detects `RAPIDAPI_KEY` from
+   `.env.example` **with the placeholder value** — replace it with your real key
+   (leave it applied to all environments):
 
-   | Name | Value | Environments |
-   | --- | --- | --- |
-   | `RAPIDAPI_KEY` | _your RapidAPI key_ | Production, Preview, Development |
+   | Name | Value |
+   | --- | --- |
+   | `RAPIDAPI_KEY` | _your RapidAPI key_ (not `your_rapidapi_key_here`) |
 
-6. Go to **Deployments → ⋯ → Redeploy** so the variable takes effect.
+5. Click **Deploy**.
+6. If you add or change the key *after* the first deploy, go to
+   **Deployments → ⋯ → Redeploy** so it takes effect.
 
 **Option B — Vercel CLI**
 

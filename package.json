@@ -36,6 +36,14 @@
   ],
   "author": "Sumit Kumar <sumitdbg255@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LearnerSumit/domain-checker-mcp.git"
+  },
+  "homepage": "https://domain-checker-mcp.vercel.app",
+  "bugs": {
+    "url": "https://github.com/LearnerSumit/domain-checker-mcp/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
     "mcp-handler": "^2.1.1",
