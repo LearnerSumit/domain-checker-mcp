@@ -67,6 +67,9 @@ rejected with a safe message.
 > (`https://domain-checker-mcp.vercel.app/mcp`). If you deployed your own, swap in
 > `https://<your-project>.vercel.app/mcp`.
 
+> 📺 **[Watch a short video walkthrough](https://player.cloudinary.com/embed/?cloud_name=ntfjzj4q&public_id=domain-checker-mp-connect-tutorial)**
+> of connecting this server to Claude.
+
 ### A. Claude.ai (web) or Claude Desktop — custom connector
 
 1. Open **Claude** → click your name / avatar → **Settings**.
