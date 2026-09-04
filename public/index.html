@@ -10,11 +10,11 @@
     <title>Domain Checker MCP — check domain availability inside Claude</title>
     <meta
       name="description"
-      content="A free, open-source MCP server that lets Claude and other AI assistants check whether a domain name is available for registration. Add one URL, then ask “is mybrand.ai available?”. Self-hostable on Vercel in 3 minutes."
+      content="A free, open-source MCP server that lets Claude and other AI assistants check whether a domain name is available for registration. Add one URL, then ask “is mybrand.ai available?”. Self-hostable on Vercel in 2 minutes, no API key needed."
     />
     <meta
       name="keywords"
-      content="MCP server, Model Context Protocol, domain availability, domain checker, Claude MCP, check domain in Claude, WHOIS API, domain name search, Claude connector, Vercel MCP"
+      content="MCP server, Model Context Protocol, domain availability, domain checker, Claude MCP, check domain in Claude, RDAP API, WHOIS API, domain name search, Claude connector, Vercel MCP"
     />
     <meta name="author" content="Sumit Kumar" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -26,7 +26,7 @@
     <meta property="og:title" content="Domain Checker MCP — check domain availability inside Claude" />
     <meta
       property="og:description"
-      content="Free, open-source MCP server. Add one URL to Claude and ask “is mybrand.ai available?”. Self-hostable on Vercel in 3 minutes."
+      content="Free, open-source MCP server. Add one URL to Claude and ask “is mybrand.ai available?”. Self-hostable on Vercel in 2 minutes, no API key needed."
     />
     <meta property="og:url" content="https://domain-checker-mcp.vercel.app/" />
     <meta property="og:image" content="https://domain-checker-mcp.vercel.app/og.svg" />
@@ -121,7 +121,7 @@
                 "name": "What is Domain Checker MCP?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Domain Checker MCP is a free, open-source MCP (Model Context Protocol) server. You add its URL (https://domain-checker-mcp.vercel.app/mcp) to an AI assistant such as Claude, ChatGPT or Gemini as a custom connector, and it exposes one tool, check_domain_availability, that reports whether a domain name is available for registration using WHOIS/DNS data."
+                  "text": "Domain Checker MCP is a free, open-source MCP (Model Context Protocol) server. You add its URL (https://domain-checker-mcp.vercel.app/mcp) to an AI assistant such as Claude, ChatGPT or Gemini as a custom connector, and it exposes one tool, check_domain_availability, that reports whether a domain name is available for registration using RDAP data queried directly from the domain's registry."
                 }
               },
               {
@@ -145,7 +145,7 @@
                 "name": "Is it free?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes. The project is MIT-licensed and free to use. The shared hosted instance uses one rate-limited API key; for heavier use, deploy your own copy on Vercel with a free RapidAPI key."
+                  "text": "Yes. The project is MIT-licensed and free to use. It needs no API key at all — domain checks go straight to public RDAP servers. The shared hosted instance applies a per-visitor rate limit to stay fair; for heavier use, deploy your own copy on Vercel in a couple of minutes."
                 }
               },
               {
@@ -432,7 +432,8 @@
           <span class="badge">Streamable HTTP (MCP 2026-07-28)</span>
           <span class="badge">Works with Claude, Claude&nbsp;Code, Cursor</span>
           <span class="badge">MIT licensed</span>
-          <span class="badge">Deploy your own in ~3&nbsp;min</span>
+          <span class="badge">No API key &mdash; free RDAP</span>
+          <span class="badge">Deploy your own in ~2&nbsp;min</span>
         </div>
         <div class="cta">
           <button class="btn primary" data-copy="ENDPOINT" type="button">Copy MCP endpoint</button>
@@ -482,8 +483,8 @@
               <pre><code>Domain: mybrand.ai
 Status: AVAILABLE
 TLD Valid: Yes
-Check Method: WHOIS
-Lookup Time: 704ms</code></pre>
+Check Method: RDAP
+Lookup Time: 583ms</code></pre>
               <p style="color: var(--muted); font-size: 0.86rem">
                 Plus a structured JSON payload so the assistant can reason over the result reliably.
               </p>
@@ -575,9 +576,9 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
             <div class="feat"><div class="ico">🌐</div><h3>Any TLD</h3><p>.com, .ai, .io, .dev, .co.uk&hellip; generic validation, nothing hard-coded.</p></div>
             <div class="feat"><div class="ico">🧹</div><h3>Forgiving input</h3><p>Trims spaces, lower-cases, turns <code>.AI</code> into <code>ai</code>, rejects full URLs.</p></div>
             <div class="feat"><div class="ico">⏱️</div><h3>Reliable</h3><p>Request timeouts via AbortController; rate limits and upstream errors become clean messages.</p></div>
-            <div class="feat"><div class="ico">🔒</div><h3>Safe by design</h3><p>API key stays server-side &mdash; never in responses or logs. No user-controlled URLs, no SSRF.</p></div>
+            <div class="feat"><div class="ico">🔒</div><h3>No credentials</h3><p>RDAP is public and unauthenticated &mdash; nothing to leak, rotate, or bill. No user-controlled URLs, no SSRF.</p></div>
             <div class="feat"><div class="ico">⚡</div><h3>Serverless</h3><p>Stateless Streamable HTTP. One-click deploy to Vercel; also runs locally over stdio.</p></div>
-            <div class="feat"><div class="ico">🧪</div><h3>Tested</h3><p>48 unit tests, strict TypeScript, no unnecessary dependencies.</p></div>
+            <div class="feat"><div class="ico">🧪</div><h3>Tested</h3><p>49 unit tests, strict TypeScript, no unnecessary dependencies.</p></div>
             <div class="feat"><div class="ico">🆓</div><h3>Open source</h3><p>MIT. Fork it, read every line, run your own copy for free.</p></div>
           </div>
         </div>
@@ -587,34 +588,28 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
       <section id="self-host">
         <div class="wrap">
           <p class="eyebrow">Recommended for real use</p>
-          <h2>Run your own copy &mdash; free, ~3 minutes</h2>
+          <h2>Run your own copy &mdash; free, ~2 minutes</h2>
           <p class="lead">
-            The shared instance above uses one rate-limited key. Your own deployment gets its own free
-            quota and can&rsquo;t be throttled by other people.
+            The shared instance above applies a per-visitor rate limit to stay fair to everyone. Your
+            own deployment is exclusively yours &mdash; no other traffic can throttle it, and there&rsquo;s
+            no API key to sign up for.
           </p>
           <div class="steps" style="margin-top: 20px">
-            <div class="step">
-              <div>
-                <h3>Get a free RapidAPI key</h3>
-                <p>Sign up at <a href="https://rapidapi.com/" rel="noopener">rapidapi.com</a>, open the
-                  <strong>Domain Status</strong> API, and subscribe to the free tier. Copy your
-                  <code>X-RapidAPI-Key</code>.</p>
-              </div>
-            </div>
             <div class="step">
               <div>
                 <h3>Fork &amp; import to Vercel</h3>
                 <p>Fork
                   <a href="https://github.com/LearnerSumit/domain-checker-mcp" rel="noopener">the repo</a>,
                   then import it at <a href="https://vercel.com/new" rel="noopener">vercel.com/new</a>.
-                  The bundled <code>vercel.json</code> configures everything.</p>
+                  The bundled <code>vercel.json</code> configures everything &mdash; no environment
+                  variables required.</p>
               </div>
             </div>
             <div class="step">
               <div>
-                <h3>Set the key &amp; deploy</h3>
-                <p>Add an environment variable <code>RAPIDAPI_KEY</code> with your real key (replace the
-                  detected placeholder), then <strong>Deploy</strong>.</p>
+                <h3>Deploy</h3>
+                <p>Click <strong>Deploy</strong>. That&rsquo;s it &mdash; no keys, no accounts, nothing
+                  else to configure.</p>
               </div>
             </div>
             <div class="step">
@@ -622,7 +617,7 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
                 <h3>Connect your URL to Claude</h3>
                 <p>Use <code>https://&lt;your-project&gt;.vercel.app/mcp</code> in the
                   <a href="#add-to-claude">steps above</a>. Verify with
-                  <code>/health</code> &mdash; it should report <code>"configured": true</code>.</p>
+                  <code>/health</code> &mdash; it should report <code>"status": "ok"</code>.</p>
               </div>
             </div>
           </div>
@@ -644,13 +639,13 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
             <span>HTTPS</span><span class="arr">&rarr;</span>
             <span>Vercel function (MCP server)</span><span class="arr">&rarr;</span>
             <span>validate &amp; normalize</span><span class="arr">&rarr;</span>
-            <span>Domain Status API</span><span class="arr">&rarr;</span>
-            <span>WHOIS / DNS</span>
+            <span>IANA RDAP bootstrap</span><span class="arr">&rarr;</span>
+            <span>registry&rsquo;s RDAP server</span>
           </div>
           <p class="lead">
-            The server is stateless: every request is independent, nothing about your queries is stored,
-            and logs contain no personal data or secrets. The upstream API key lives only in the
-            server&rsquo;s environment.
+            The server is stateless: every request is independent, and nothing about your queries is
+            stored. There&rsquo;s no API key anywhere &mdash; the IANA bootstrap registry resolves which
+            RDAP server owns a TLD, and that server is queried directly and publicly.
           </p>
           <h3 style="font-size: 1rem; margin: 22px 0 8px">Quick API test</h3>
           <pre><code>curl -s -X POST https://domain-checker-mcp.vercel.app/mcp \
@@ -675,7 +670,7 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
                 (<code>https://domain-checker-mcp.vercel.app/mcp</code>) to an AI assistant such as
                 Claude, ChatGPT or Gemini as a custom connector, and it gives the assistant one tool,
                 <code>check_domain_availability</code>, that reports whether a domain name is available
-                for registration using WHOIS/DNS data.</p>
+                for registration using RDAP data queried directly from the domain&rsquo;s registry.</p>
             </details>
             <details>
               <summary>How do I check domain availability in Claude?</summary>
@@ -692,9 +687,10 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
             </details>
             <details>
               <summary>Is it really free? What&rsquo;s the catch?</summary>
-              <p>The code is MIT-licensed and free. The hosted instance shares a single free API key, so
-                it&rsquo;s rate-limited and best for trying things out. For regular use, deploy your own
-                copy &mdash; it takes about 3 minutes and uses your own free RapidAPI quota.</p>
+              <p>The code is MIT-licensed and free, and needs no API key &mdash; it queries public RDAP
+                servers directly. The hosted instance applies a per-visitor rate limit to stay fair to
+                everyone, so it&rsquo;s best for trying things out. For regular use, deploy your own copy
+                &mdash; it takes about 2 minutes and there&rsquo;s nothing to sign up for.</p>
             </details>
             <details>
               <summary>Which domains and TLDs can I check?</summary>
@@ -711,22 +707,22 @@ Which of acme.dev, acme.io and acme.ai are free?</code></pre>
             </details>
             <details>
               <summary>How accurate is the result?</summary>
-              <p>Availability is derived from WHOIS/DNS via the upstream Domain Status API. It&rsquo;s a
-                strong signal but not a purchase guarantee &mdash; always confirm at a registrar before
-                relying on it. Some registries also reserve or premium-price names that look
-                &ldquo;available&rdquo;.</p>
+              <p>Availability is derived from RDAP records, queried directly from the domain&rsquo;s
+                official registry (e.g. Verisign for <code>.com</code>). It&rsquo;s a strong signal but
+                not a purchase guarantee &mdash; always confirm at a registrar before relying on it. Some
+                registries also reserve or premium-price names that look &ldquo;available&rdquo;.</p>
             </details>
             <details>
               <summary>Do you store my queries?</summary>
               <p>No. The server is stateless and keeps no database. Operational logs record events like
-                &ldquo;request started/completed&rdquo; and the domain checked, without personal data,
-                and never the API key.</p>
+                &ldquo;request started/completed&rdquo; and the domain checked, without personal data.
+                There are no credentials anywhere for logs to leak.</p>
             </details>
             <details>
               <summary>I got a &ldquo;rate limiting&rdquo; message.</summary>
-              <p>The shared instance&rsquo;s free upstream tier allows very few requests per window, and
-                there&rsquo;s a per-client cap on top. Wait a few seconds, or
-                <a href="#self-host">run your own copy</a>.</p>
+              <p>The shared instance caps how many checks each visitor can run per minute, to keep it
+                fair for everyone. Wait a few seconds, or <a href="#self-host">run your own copy</a>,
+                which isn&rsquo;t affected by anyone else&rsquo;s usage.</p>
             </details>
           </div>
         </div>
