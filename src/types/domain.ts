@@ -1,30 +1,8 @@
 /**
- * Types for the RapidAPI "Domain Status" API and the cleaned result the MCP
- * tool returns.
+ * Types for the cleaned domain availability result the MCP tool returns.
  */
 
 import { z } from "zod";
-
-/**
- * Shape of a successful response from
- * `POST https://domainstatus.p.rapidapi.com/v1/domain/available`.
- *
- * Only `available` is treated as required; everything else is optional so a
- * minor upstream change does not break the tool. Unknown keys are preserved.
- */
-export const rapidApiDomainResponseSchema = z
-  .object({
-    domain: z.string().optional(),
-    name: z.string().optional(),
-    tld: z.string().optional(),
-    tld_valid: z.boolean().optional(),
-    available: z.boolean(),
-    check: z.string().optional(),
-    time: z.string().optional(),
-  })
-  .loose();
-
-export type RapidApiDomainResponse = z.infer<typeof rapidApiDomainResponseSchema>;
 
 /** Clean, AI-friendly result surfaced by the MCP tool. */
 export interface DomainAvailabilityResult {
@@ -36,11 +14,11 @@ export interface DomainAvailabilityResult {
   tld: string;
   /** `true` when the domain is available for registration. */
   available: boolean;
-  /** Whether the upstream considered the TLD valid (null if not reported). */
+  /** Whether the TLD is a valid, RDAP-registered TLD. */
   tldValid: boolean | null;
-  /** Method the upstream used, e.g. `whois` or `dns` (null if not reported). */
+  /** Method used to determine availability, e.g. `rdap`. */
   checkMethod: string | null;
-  /** Upstream-reported latency string, e.g. `918ms` (null if not reported). */
+  /** How long the lookup took, e.g. `120ms`. */
   elapsed: string | null;
 }
 

@@ -23,7 +23,6 @@ import { fileURLToPath } from "node:url";
 import { extname } from "node:path";
 
 import { mcpHandler, SERVER_NAME, SERVER_VERSION } from "./server.js";
-import { isConfigured } from "./config.js";
 import { logger } from "./utils/logger.js";
 
 const PUBLIC_DIR = new URL("../public/", import.meta.url);
@@ -108,9 +107,7 @@ const server = createServer((req, res) => {
 
   if (HEALTH_PATHS.has(pathname)) {
     res.setHeader("content-type", "application/json");
-    res.end(
-      JSON.stringify({ status: "ok", server: SERVER_NAME, version: SERVER_VERSION, configured: isConfigured() }),
-    );
+    res.end(JSON.stringify({ status: "ok", server: SERVER_NAME, version: SERVER_VERSION }));
     return;
   }
 
@@ -146,6 +143,5 @@ server.listen(PORT, () => {
   logger.info("domain-checker-mcp dev server listening", {
     url: `http://localhost:${PORT}/mcp`,
     health: `http://localhost:${PORT}/health`,
-    configured: isConfigured(),
   });
 });

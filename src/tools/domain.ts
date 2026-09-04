@@ -2,7 +2,7 @@
  * MCP tool: `check_domain_availability`
  *
  * The handler is deliberately thin: it delegates normalisation to
- * `validation/domain` and the network call to `services/rapidapi`, then formats
+ * `validation/domain` and the network call to `services/rdap`, then formats
  * a clean, AI-friendly result. All errors are converted to safe messages.
  */
 
@@ -10,7 +10,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/server";
 
 import { normalizeAndValidateDomain } from "../validation/domain.js";
-import { checkDomainAvailability, type RapidApiDeps } from "../services/rapidapi.js";
+import { checkDomainAvailability, type RdapDeps } from "../services/rdap.js";
 import { toAppError } from "../utils/errors.js";
 import { logger } from "../utils/logger.js";
 import { getRateLimitConfig } from "../config.js";
@@ -54,7 +54,7 @@ export function formatResult(r: DomainAvailabilityResult): string {
  */
 export async function runCheckDomainAvailability(
   input: CheckDomainAvailabilityInput,
-  deps?: RapidApiDeps,
+  deps?: RdapDeps,
 ): Promise<DomainAvailabilityResult> {
   const normalized = normalizeAndValidateDomain(input.name, input.tld);
   return checkDomainAvailability(normalized, deps);
@@ -62,7 +62,7 @@ export async function runCheckDomainAvailability(
 
 export function registerCheckDomainAvailability(
   server: McpServer,
-  deps?: RapidApiDeps,
+  deps?: RdapDeps,
 ): void {
   server.registerTool(
     TOOL_NAME,
@@ -71,7 +71,7 @@ export function registerCheckDomainAvailability(
       description:
         "Check whether a domain name is available for registration. Provide the name and TLD " +
         'separately (e.g. name "mybrand", tld "ai"). Returns availability, whether the ' +
-        "TLD is valid, and which lookup method (usually WHOIS) was used.",
+        "TLD is valid, and which lookup method (RDAP) was used.",
       inputSchema: checkDomainAvailabilityInputSchema,
       annotations: {
         readOnlyHint: true,

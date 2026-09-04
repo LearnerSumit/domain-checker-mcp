@@ -1,7 +1,7 @@
 {
   "name": "domain-checker-mcp",
   "version": "1.0.0",
-  "description": "Production-ready MCP server for checking domain-name availability via the RapidAPI Domain Status API.",
+  "description": "Production-ready MCP server for checking domain-name availability via free, public RDAP lookups (no API key required).",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -31,7 +31,7 @@
     "domain",
     "availability",
     "whois",
-    "rapidapi",
+    "rdap",
     "vercel"
   ],
   "author": "Sumit Kumar <sumitdbg255@gmail.com>",

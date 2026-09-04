@@ -4,7 +4,7 @@
  * Scope note: on serverless (Vercel) the counter lives in a single warm
  * instance's memory, so the effective limit is *per instance*, not global. That
  * is intentional and sufficient here — it stops a single client from hammering
- * the shared RapidAPI quota, without adding a datastore dependency. For strict
+ * upstream RDAP servers, without adding a datastore dependency. For strict
  * global limits, put the Vercel Firewall / a KV store in front.
  */
 

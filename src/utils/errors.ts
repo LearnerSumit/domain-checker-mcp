@@ -3,13 +3,13 @@
  *
  * Every error that can reach the MCP client is an {@link AppError} carrying a
  * machine-readable `code` and a `safeMessage` that is guaranteed to contain no
- * secrets, no upstream response bodies and no request headers. Handlers should
- * only ever surface `error.safeMessage` to callers.
+ * upstream response bodies and no request headers. Handlers should only ever
+ * surface `error.safeMessage` to callers.
  */
 
 export type AppErrorCode =
-  | "CONFIGURATION_ERROR"
   | "VALIDATION_ERROR"
+  | "UNSUPPORTED_TLD"
   | "UPSTREAM_AUTH_ERROR"
   | "RATE_LIMIT_ERROR"
   | "UPSTREAM_SERVER_ERROR"
@@ -40,21 +40,25 @@ export class AppError extends Error {
   }
 }
 
-export class ConfigurationError extends AppError {
-  constructor(safeMessage = "RAPIDAPI_KEY is not configured.") {
-    super("CONFIGURATION_ERROR", safeMessage);
-  }
-}
-
 export class ValidationError extends AppError {
   constructor(safeMessage: string) {
     super("VALIDATION_ERROR", safeMessage);
   }
 }
 
+/** No RDAP server is registered for the TLD in the IANA bootstrap registry. */
+export class UnsupportedTldError extends AppError {
+  constructor(tld: string) {
+    super(
+      "UNSUPPORTED_TLD",
+      `No RDAP server is registered for ".${tld}". This TLD may not exist, or does not support RDAP lookups.`,
+    );
+  }
+}
+
 export class UpstreamAuthError extends AppError {
   constructor(
-    safeMessage = "The domain availability service rejected the API credentials. Check that RAPIDAPI_KEY is valid and subscribed to the Domain Status API.",
+    safeMessage = "The domain registry rejected the request.",
     status?: number,
   ) {
     super("UPSTREAM_AUTH_ERROR", safeMessage, status !== undefined ? { status } : undefined);
@@ -102,17 +106,6 @@ export class NetworkError extends AppError {
   ) {
     super("NETWORK_ERROR", safeMessage);
   }
-}
-
-/**
- * Redacts a secret (e.g. the RapidAPI key) from an arbitrary string so it can
- * never leak into a log line or an error message.
- */
-export function redactSecret(text: string, secret: string | undefined): string {
-  if (!secret || secret.length < 4) {
-    return text;
-  }
-  return text.split(secret).join("***REDACTED***");
 }
 
 /** Normalises an unknown thrown value into an {@link AppError}. */

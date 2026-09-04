@@ -8,7 +8,8 @@ import {
   runCheckDomainAvailability,
   TOOL_NAME,
 } from "../src/tools/domain.js";
-import type { RapidApiDeps } from "../src/services/rapidapi.js";
+import type { RdapDeps } from "../src/services/rdap.js";
+import { IANA_BOOTSTRAP_URL, resetRdapBootstrapCache } from "../src/services/rdap.js";
 import { resetRateLimiter } from "../src/utils/rateLimit.js";
 
 type ToolHandler = (args: { name: string; tld: string }) => Promise<{
@@ -18,7 +19,7 @@ type ToolHandler = (args: { name: string; tld: string }) => Promise<{
 }>;
 
 /** Registers the tool against a fake server and returns the captured handler + config. */
-function captureTool(deps?: RapidApiDeps): { name: string; config: Record<string, unknown>; handler: ToolHandler } {
+function captureTool(deps?: RdapDeps): { name: string; config: Record<string, unknown>; handler: ToolHandler } {
   let captured: { name: string; config: Record<string, unknown>; handler: ToolHandler } | undefined;
   const fakeServer = {
     registerTool: (name: string, config: Record<string, unknown>, handler: ToolHandler) => {
@@ -32,7 +33,13 @@ function captureTool(deps?: RapidApiDeps): { name: string; config: Record<string
 }
 
 type FetchFn = (url: string | URL | Request, init?: RequestInit) => Promise<Response>;
-const mockFetch = (impl: FetchFn) => vi.fn(impl);
+
+const BOOTSTRAP = {
+  services: [
+    [["ai"], ["https://rdap.identitydigital.services/rdap/"]],
+    [["com", "net"], ["https://rdap.verisign.com/com/v1/"]],
+  ],
+};
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -41,10 +48,20 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+/** A fetch mock that answers the IANA bootstrap URL and delegates domain queries. */
+function mockFetch(domainHandler: FetchFn) {
+  return vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+    if (String(url) === IANA_BOOTSTRAP_URL) {
+      return jsonResponse(BOOTSTRAP);
+    }
+    return domainHandler(url, init);
+  });
+}
+
 beforeEach(() => {
-  vi.stubEnv("RAPIDAPI_KEY", "unit-test-key");
   vi.stubEnv("LOG_LEVEL", "silent");
   resetRateLimiter();
+  resetRdapBootstrapCache();
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -64,15 +81,13 @@ describe("check_domain_availability tool", () => {
     expect(checkDomainAvailabilityInputSchema.safeParse({ name: 1, tld: "ai" }).success).toBe(false);
   });
 
-  it("normalizes ' PerfectReview ' + '.AI' to perfectreview.ai before calling upstream", async () => {
-    const fetchImpl = mockFetch(async () =>
-      jsonResponse({ domain: "perfectreview.ai", available: true, tld_valid: true, check: "whois" }),
-    );
+  it("normalizes ' PerfectReview ' + '.AI' to perfectreview.ai before querying RDAP", async () => {
+    const fetchImpl = mockFetch(async () => new Response("", { status: 404 }));
     const { handler } = captureTool({ fetchImpl });
     const res = await handler({ name: " PerfectReview ", tld: ".AI" });
 
-    const [, init] = fetchImpl.mock.calls[0]!;
-    expect(JSON.parse(String(init?.body))).toEqual({ name: "perfectreview", tld: "ai" });
+    const domainCall = fetchImpl.mock.calls.find(([url]) => String(url) !== IANA_BOOTSTRAP_URL);
+    expect(domainCall?.[0]).toBe("https://rdap.identitydigital.services/rdap/domain/perfectreview.ai");
     expect(res.isError).toBeUndefined();
     expect(res.content[0]!.text).toContain("perfectreview.ai");
     expect(res.structuredContent).toMatchObject({ domain: "perfectreview.ai", available: true });
@@ -88,26 +103,25 @@ describe("check_domain_availability tool", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("returns a safe isError result when the key is not configured", async () => {
-    vi.stubEnv("RAPIDAPI_KEY", "");
-    const { handler } = captureTool({ fetchImpl: vi.fn() });
-    const res = await handler({ name: "perfectreview", tld: "ai" });
+  it("returns a safe isError result for an unsupported TLD", async () => {
+    const fetchImpl = mockFetch(async () => new Response("", { status: 404 }));
+    const { handler } = captureTool({ fetchImpl });
+    const res = await handler({ name: "perfectreview", tld: "doesnotexist" });
     expect(res.isError).toBe(true);
-    expect(res.content[0]!.text).toBe("RAPIDAPI_KEY is not configured.");
+    expect(res.content[0]!.text).toMatch(/no rdap server is registered/i);
   });
 
   it("surfaces a clean auth error on upstream 401", async () => {
-    const fetchImpl = vi.fn(async () => new Response("unauthorized", { status: 401 }));
+    const fetchImpl = mockFetch(async () => new Response("unauthorized", { status: 401 }));
     const { handler } = captureTool({ fetchImpl });
     const res = await handler({ name: "perfectreview", tld: "ai" });
     expect(res.isError).toBe(true);
-    expect(res.content[0]!.text).toMatch(/credential/i);
-    expect(res.content[0]!.text).not.toContain("unit-test-key");
+    expect(res.content[0]!.text).toMatch(/rejected the request/i);
   });
 
   it("enforces its own per-client rate limit before calling upstream", async () => {
     vi.stubEnv("RATE_LIMIT_MAX", "2");
-    const fetchImpl = mockFetch(async () => jsonResponse({ domain: "x.ai", available: true }));
+    const fetchImpl = mockFetch(async () => new Response("", { status: 404 }));
     const { handler } = captureTool({ fetchImpl });
 
     expect((await handler({ name: "a", tld: "ai" })).isError).toBeUndefined();
@@ -115,11 +129,11 @@ describe("check_domain_availability tool", () => {
     const third = await handler({ name: "c", tld: "ai" });
     expect(third.isError).toBe(true);
     expect(third.content[0]!.text).toMatch(/rate limit reached/i);
-    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls.filter(([url]) => String(url) !== IANA_BOOTSTRAP_URL)).toHaveLength(2);
   });
 
   it("surfaces a clean rate-limit error on upstream 429", async () => {
-    const fetchImpl = vi.fn(async () => new Response("", { status: 429 }));
+    const fetchImpl = mockFetch(async () => new Response("", { status: 429 }));
     const { handler } = captureTool({ fetchImpl });
     const res = await handler({ name: "perfectreview", tld: "ai" });
     expect(res.isError).toBe(true);
@@ -129,16 +143,14 @@ describe("check_domain_availability tool", () => {
 
 describe("runCheckDomainAvailability", () => {
   it("resolves an available domain (perfectreview.ai)", async () => {
-    const fetchImpl = vi.fn(async () => jsonResponse({ domain: "perfectreview.ai", available: true }));
+    const fetchImpl = mockFetch(async () => new Response("", { status: 404 }));
     await expect(
       runCheckDomainAvailability({ name: "perfectreview", tld: "ai" }, { fetchImpl }),
     ).resolves.toMatchObject({ available: true });
   });
 
   it("resolves an unavailable domain (google.com)", async () => {
-    const fetchImpl = vi.fn(async () =>
-      jsonResponse({ domain: "google.com", available: false, tld_valid: true, check: "whois" }),
-    );
+    const fetchImpl = mockFetch(async () => jsonResponse({ objectClassName: "domain" }));
     await expect(
       runCheckDomainAvailability({ name: "google", tld: "com" }, { fetchImpl }),
     ).resolves.toMatchObject({ available: false });
@@ -154,16 +166,16 @@ describe("formatResult", () => {
         tld: "ai",
         available: true,
         tldValid: true,
-        checkMethod: "whois",
-        elapsed: "918ms",
+        checkMethod: "rdap",
+        elapsed: "42ms",
       }),
     ).toBe(
       [
         "Domain: perfectreview.ai",
         "Status: AVAILABLE",
         "TLD Valid: Yes",
-        "Check Method: WHOIS",
-        "Lookup Time: 918ms",
+        "Check Method: RDAP",
+        "Lookup Time: 42ms",
       ].join("\n"),
     );
   });

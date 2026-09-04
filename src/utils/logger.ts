@@ -3,12 +3,10 @@
  *
  * - Writes single-line JSON to **stderr** (keeps stdout clean for the stdio MCP
  *   transport and is the correct stream for serverless log capture).
- * - Never logs secrets: any string field whose value contains the RapidAPI key
- *   is redacted, and callers are expected to pass only safe metadata anyway
- *   (no headers, no request bodies with credentials).
+ * - Any field whose key looks sensitive (key/secret/token/...) is redacted;
+ *   callers are expected to pass only safe metadata anyway (no headers, no
+ *   request bodies).
  */
-
-import { redactSecret } from "./errors.js";
 
 const LEVELS = ["debug", "info", "warn", "error", "silent"] as const;
 export type LogLevel = (typeof LEVELS)[number];
@@ -32,14 +30,9 @@ const SENSITIVE_KEY_PATTERN = /(key|secret|token|authorization|password|cookie)/
 
 function sanitize(meta: Meta | undefined): Meta | undefined {
   if (!meta) return undefined;
-  const secret = process.env.RAPIDAPI_KEY;
   const out: Meta = {};
   for (const [k, v] of Object.entries(meta)) {
-    if (SENSITIVE_KEY_PATTERN.test(k)) {
-      out[k] = "***REDACTED***";
-      continue;
-    }
-    out[k] = typeof v === "string" ? redactSecret(v, secret) : v;
+    out[k] = SENSITIVE_KEY_PATTERN.test(k) ? "***REDACTED***" : v;
   }
   return out;
 }
